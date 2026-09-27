@@ -1,0 +1,1410 @@
+/* ==========================================================================
+   Laalpari — Jeet Ke Dikhao (Spider-Man Edition)
+   Modern 3x3 Survival Game Stylesheet
+   Theme: Red & Black Spider-Man Aesthetics, Web Grids, Neon Crimson & Electric Blue
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. ROOT VARIABLES & THEME TOKENS
+   -------------------------------------------------------------------------- */
+:root {
+  /* Dark Spider-Man space & obsidian backgrounds */
+  --bg-gradient-outer: #09090f;
+  --bg-gradient-center: #020204;
+  --spider-black: #07070b;
+  --spider-dark-glass: rgba(12, 12, 20, 0.88);
+
+  /* Frosted glass surface styles */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg-hover: rgba(255, 255, 255, 0.09);
+  --glass-card: rgba(13, 14, 24, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.10);
+  --glass-border-red: rgba(239, 68, 68, 0.45);
+  --glass-border-blue: rgba(56, 189, 248, 0.7);
+
+  /* Typography color palette */
+  --text-main: #f8fafc;
+  --text-muted: rgba(248, 250, 252, 0.68);
+  --text-subtle: rgba(248, 250, 252, 0.45);
+
+  /* Core Spider-Man game element accents */
+  --spidey-crimson: #ff0038;      /* Neon crimson accent */
+  --spidey-crimson-glow: rgba(255, 0, 56, 0.65);
+  --spidey-danger-bg: rgba(225, 29, 72, 0.28);
+  --spidey-safe-black: #05070d;    /* Safe black zone obsidian */
+  --spidey-safe-border: #38bdf8;   /* Cyan safe edge */
+  --spidey-safe-glow: rgba(56, 189, 248, 0.5);
+  --electric-blue: #00d2ff;        /* Player Electric Blue Dot 🔵 */
+  --electric-blue-glow: 0 0 25px #00d2ff, 0 0 45px rgba(0, 210, 255, 0.7);
+  --accent-emerald: #10b981;      /* Streak and bonus success */
+
+  /* Border radius hierarchy */
+  --radius-chip: 12px;
+  --radius-cell: 18px;
+  --radius-card: 26px;
+  --radius-pill: 999px;
+
+  /* Shadows and glows */
+  --shadow-panel: 0 16px 40px rgba(0, 0, 0, 0.75);
+  --glow-hazard: 0 0 35px rgba(255, 0, 56, 0.6);
+
+  /* Animation timing curves */
+  --ease-fast: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* --------------------------------------------------------------------------
+   2. GLOBAL RESET & BASE SETTINGS
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 25%, #150914 0%, var(--bg-gradient-outer) 45%, var(--bg-gradient-center) 100%);
+  background-color: var(--bg-gradient-center);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+  overscroll-behavior: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* Web background subtle ambient pattern */
+body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(255, 0, 56, 0.04) 0%, transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 36px 36px, 36px 36px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Tabular figures for digital numbers */
+.tabular {
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+/* Accessible focus ring */
+:focus-visible {
+  outline: 2px solid var(--electric-blue);
+  outline-offset: 2px;
+}
+
+/* Reusable frosted glass panel */
+.glass-panel {
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-panel);
+}
+
+@supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+  .glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+}
+
+/* Red screen vignette flash on damage */
+#hit-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 100px 30px rgba(255, 0, 56, 0.85);
+  opacity: 0;
+  z-index: 40;
+  transition: opacity 0.12s ease-out;
+}
+
+#hit-vignette.active {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   3. RESPONSIVE DEVICE SHELL & VIEWPORT SIMULATOR
+   -------------------------------------------------------------------------- */
+#device-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  transition: width 0.3s var(--ease-smooth), height 0.3s var(--ease-smooth), border-radius 0.3s var(--ease-smooth);
+}
+
+#device-shell.shaking {
+  animation: shellShake 0.24s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shellShake {
+  10%, 90% { transform: translate3d(-3px, 0, 0); }
+  20%, 80% { transform: translate3d(4px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 2px, 0); }
+  40%, 60% { transform: translate3d(4px, -2px, 0); }
+}
+
+/* Viewport Simulator Modes */
+#device-shell.mode-mobile-small {
+  width: 340px;
+  height: 660px;
+  border: 10px solid #1a1622;
+  border-radius: 36px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+}
+
+#device-shell.mode-mobile-large {
+  width: 412px;
+  height: 800px;
+  border: 12px solid #1a1622;
+  border-radius: 44px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+}
+
+#device-shell.mode-tablet {
+  width: 768px;
+  height: 920px;
+  border: 14px solid #1a1622;
+  border-radius: 32px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9);
+}
+
+#device-shell.mode-laptop {
+  width: 1024px;
+  height: 680px;
+  border: 10px solid #1a1622;
+  border-radius: 20px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9);
+}
+
+#device-shell.mode-tv {
+  width: 95vw;
+  height: 94vh;
+  border: 6px solid #221c2e;
+  border-radius: 16px;
+  box-shadow: 0 0 50px rgba(255, 0, 56, 0.2);
+}
+
+/* Inner game container */
+#game-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: clamp(6px, 1.5vh, 12px) clamp(10px, 2.5vw, 16px);
+  z-index: 2;
+}
+
+/* --------------------------------------------------------------------------
+   4. HEADER & BRAND TOOLBAR
+   -------------------------------------------------------------------------- */
+.top-toolbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: clamp(2px, 0.8vh, 6px);
+  z-index: 10;
+}
+
+.brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spider-brand .brand-spider {
+  font-size: 1.4rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 10px var(--spidey-crimson));
+  animation: spiderWiggle 3s infinite ease-in-out;
+}
+
+@keyframes spiderWiggle {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.1) rotate(4deg); }
+}
+
+.brand-title-wrap {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.brand-name {
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  font-size: clamp(14px, 3.2vw, 17px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #ffffff 30%, #ff4b6e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 12px rgba(255, 0, 56, 0.4);
+}
+
+.brand-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ff3b60;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tool-btn {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  border-radius: var(--radius-chip);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.15s var(--ease-fast), color 0.15s, transform 0.12s;
+}
+
+.tool-btn:hover {
+  background: var(--glass-bg-hover);
+  color: var(--text-main);
+  border-color: rgba(255, 0, 56, 0.4);
+}
+
+.tool-btn:active {
+  transform: scale(0.95);
+}
+
+/* --------------------------------------------------------------------------
+   5. HEADS-UP DISPLAY (HUD)
+   -------------------------------------------------------------------------- */
+#hud {
+  width: 100%;
+  border-radius: var(--radius-card);
+  padding: clamp(8px, 1.5vh, 12px) clamp(10px, 2.2vw, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 1vh, 10px);
+  border: 1px solid rgba(255, 0, 56, 0.2);
+  background: radial-gradient(circle at 50% 0%, rgba(255, 0, 56, 0.08) 0%, rgba(12, 12, 20, 0.88) 100%);
+}
+
+.hud-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.profile-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 0, 56, 0.35);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: background 0.15s var(--ease-fast), border-color 0.15s;
+  max-width: 48%;
+}
+
+.profile-pill:hover {
+  background: rgba(255, 0, 56, 0.15);
+  border-color: var(--spidey-crimson);
+}
+
+.profile-avatar {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.profile-pill-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  overflow: hidden;
+}
+
+.profile-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #ff4b6e;
+  line-height: 1;
+}
+
+.profile-value {
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  font-size: clamp(11px, 2.4vw, 13px);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90px;
+}
+
+.hud-stat-box {
+  text-align: right;
+}
+
+.hud-stat-box.center {
+  text-align: center;
+}
+
+.hud-stat-label {
+  font-size: clamp(9px, 1.8vw, 10px);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.hud-stat-label.sub {
+  margin-top: 2px;
+}
+
+.hud-stat-label.sub span {
+  color: var(--text-muted);
+}
+
+.hud-stat-value {
+  font-size: clamp(18px, 4.2vw, 24px);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-main);
+}
+
+/* 3 Spider Lifelines */
+.lifelines-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.spider-lifelines-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spider-capsule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(28px, 7vw, 34px);
+  height: clamp(28px, 7vw, 34px);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 0, 56, 0.15);
+  border: 1.5px solid rgba(255, 0, 56, 0.6);
+  box-shadow: 0 0 12px rgba(255, 0, 56, 0.4);
+  transition: transform 0.25s var(--ease-spring), opacity 0.25s, filter 0.25s;
+}
+
+.spider-capsule .spider-icon {
+  font-size: clamp(14px, 3.5vw, 17px);
+  line-height: 1;
+  filter: drop-shadow(0 0 6px var(--spidey-crimson));
+}
+
+.spider-capsule.lost {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+  opacity: 0.25;
+  filter: grayscale(1);
+  transform: scale(0.85);
+}
+
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-emerald);
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 3px 8px;
+  border-radius: var(--radius-chip);
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.streak-badge.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   6. 2.0-SECOND LIVE COUNTDOWN TIMER & PROGRESS BAR
+   -------------------------------------------------------------------------- */
+.timer-section {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: clamp(4px, 1vh, 8px) 0;
+  z-index: 5;
+}
+
+.timer-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 4px;
+}
+
+.timer-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.radar-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--spidey-crimson);
+  box-shadow: 0 0 10px var(--spidey-crimson);
+  animation: radarBlip 1s infinite ease-in-out;
+}
+
+@keyframes radarBlip {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.7); opacity: 0.4; }
+}
+
+.timer-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.timer-digits {
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  font-size: clamp(14px, 3.4vw, 17px);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(255, 0, 56, 0.7);
+  transition: color 0.15s;
+}
+
+.timer-digits.critical {
+  color: var(--spidey-crimson);
+  animation: digitsFlash 0.2s infinite alternate;
+}
+
+@keyframes digitsFlash {
+  0% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(1.08); filter: brightness(1.4); }
+}
+
+.timer-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  position: relative;
+}
+
+.timer-bar {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #ff0038 0%, #ff4b6e 60%, #38bdf8 100%);
+  border-radius: inherit;
+  box-shadow: 0 0 14px var(--spidey-crimson);
+  transform-origin: left center;
+  transition: width 0.03s linear, background 0.2s;
+}
+
+.timer-bar.critical {
+  background: #ff0038;
+  box-shadow: 0 0 20px #ff0038;
+}
+
+/* --------------------------------------------------------------------------
+   7. 3x3 ARENA GRID & CELLS (7 RED ZONES vs 2 SAFE BLACK ZONES)
+   -------------------------------------------------------------------------- */
+#arena-wrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: auto 0;
+}
+
+#grid-viewport {
+  position: relative;
+  width: min(84vw, 42vh, 370px);
+  height: min(84vw, 42vh, 370px);
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-card);
+  padding: clamp(8px, 1.8vw, 12px);
+  box-shadow: var(--shadow-panel), inset 0 0 50px rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 0, 56, 0.3);
+}
+
+/* Spider-Man Web Texture in Arena */
+.spider-web-bg {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 0, 56, 0.06) 0%, rgba(10, 10, 16, 0.95) 75%);
+}
+
+#grid-3x3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: clamp(6px, 1.6vw, 10px);
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.grid-cell {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-cell);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 0.15s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.grid-cell:active {
+  transform: scale(0.96);
+}
+
+.cell-status-tag {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+/* 7 RED ZONES (LETHAL HAZARDS) */
+.grid-cell.zone-red {
+  background: radial-gradient(circle at center, rgba(255, 0, 56, 0.38) 0%, rgba(185, 28, 28, 0.18) 100%);
+  border-color: rgba(255, 0, 56, 0.85);
+  box-shadow: inset 0 0 20px rgba(255, 0, 56, 0.45), 0 0 14px rgba(255, 0, 56, 0.3);
+  animation: redZonePulse 1.2s infinite ease-in-out;
+}
+
+@keyframes redZonePulse {
+  0%, 100% {
+    background-color: rgba(255, 0, 56, 0.25);
+    border-color: rgba(255, 0, 56, 0.7);
+  }
+  50% {
+    background-color: rgba(255, 0, 56, 0.42);
+    border-color: #ff0038;
+    box-shadow: inset 0 0 26px rgba(255, 0, 56, 0.6), 0 0 18px rgba(255, 0, 56, 0.45);
+  }
+}
+
+.grid-cell.zone-red .cell-status-tag {
+  opacity: 0.9;
+  color: #ff4b6e;
+}
+
+.grid-cell.zone-red::before {
+  content: '✕';
+  position: absolute;
+  font-size: clamp(14px, 3.5vw, 18px);
+  font-weight: 900;
+  color: rgba(255, 0, 56, 0.35);
+  pointer-events: none;
+}
+
+/* 2 SAFE BLACK ZONES (SANCTUARY) */
+.grid-cell.zone-black {
+  background: radial-gradient(circle at center, #020306 0%, #060912 100%);
+  border: 2px solid var(--spidey-safe-border);
+  box-shadow: inset 0 0 22px rgba(56, 189, 248, 0.3), 0 0 18px rgba(56, 189, 248, 0.45);
+  animation: safeZonePulse 1.4s infinite ease-in-out;
+}
+
+@keyframes safeZonePulse {
+  0%, 100% {
+    border-color: rgba(56, 189, 248, 0.7);
+    box-shadow: inset 0 0 18px rgba(56, 189, 248, 0.25), 0 0 14px rgba(56, 189, 248, 0.35);
+  }
+  50% {
+    border-color: #7dd3fc;
+    box-shadow: inset 0 0 28px rgba(56, 189, 248, 0.45), 0 0 22px rgba(56, 189, 248, 0.6);
+  }
+}
+
+.grid-cell.zone-black .cell-status-tag {
+  opacity: 1;
+  color: #7dd3fc;
+}
+
+.grid-cell.zone-black::before {
+  content: '🛡️';
+  position: absolute;
+  font-size: clamp(12px, 3.2vw, 16px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Scan Flash Animation when Round Concludes */
+.grid-cell.scan-safe-flash {
+  background: rgba(16, 185, 129, 0.65) !important;
+  border-color: #34d399 !important;
+  box-shadow: 0 0 35px #10b981 !important;
+}
+
+.grid-cell.scan-danger-flash {
+  background: rgba(255, 0, 56, 0.8) !important;
+  border-color: #ff0038 !important;
+  box-shadow: 0 0 40px #ff0038 !important;
+}
+
+/* Arena Legend */
+.arena-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+}
+
+.legend-dot.red {
+  background: var(--spidey-crimson);
+  box-shadow: 0 0 8px var(--spidey-crimson);
+}
+
+.legend-dot.black {
+  background: #060912;
+  border: 1.5px solid var(--spidey-safe-border);
+  box-shadow: 0 0 8px var(--spidey-safe-border);
+}
+
+/* --------------------------------------------------------------------------
+   8. PLAYER TOKEN: ELECTRIC BLUE DOT (🔵)
+   -------------------------------------------------------------------------- */
+#player-token {
+  position: absolute;
+  width: calc((100% - (clamp(6px, 1.6vw, 10px) * 2)) / 3);
+  height: calc((100% - (clamp(6px, 1.6vw, 10px) * 2)) / 3);
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+  transition: transform 0.16s var(--ease-spring);
+  will-change: transform;
+}
+
+.player-disc {
+  position: relative;
+  width: 58%;
+  height: 58%;
+  border-radius: var(--radius-pill);
+  background: radial-gradient(circle at 35% 30%, #bbf2fe 0%, var(--electric-blue) 60%, #0284c7 100%);
+  box-shadow: var(--electric-blue-glow);
+  border: 2px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s var(--ease-spring), filter 0.15s;
+}
+
+.blue-core {
+  position: absolute;
+  width: 32%;
+  height: 32%;
+  border-radius: var(--radius-pill);
+  background: #ffffff;
+  filter: blur(0.5px);
+}
+
+/* Player Aura for high streaks */
+.player-aura {
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--radius-pill);
+  background: conic-gradient(from 0deg, transparent, #38bdf8, transparent, #ff0038, transparent);
+  animation: rotatePlayerAura 2.5s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: -1;
+}
+
+.player-aura.active {
+  opacity: 0.95;
+}
+
+@keyframes rotatePlayerAura {
+  100% { transform: rotate(360deg); }
+}
+
+.player-disc.hit {
+  background: radial-gradient(circle at 35% 30%, #fecaca 0%, #ff0038 70%, #991b1b 100%);
+  box-shadow: var(--glow-hazard);
+  animation: hitShake 0.22s var(--ease-fast);
+}
+
+@keyframes hitShake {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-3px, 2px); }
+  50% { transform: translate(3px, -2px); }
+  75% { transform: translate(-2px, -1px); }
+}
+
+/* --------------------------------------------------------------------------
+   9. PARTICLES CANVAS
+   -------------------------------------------------------------------------- */
+#fx-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 15;
+}
+
+/* --------------------------------------------------------------------------
+   10. TOUCH CONTROLS (D-PAD FOR MOBILE)
+   -------------------------------------------------------------------------- */
+#mobile-controls {
+  width: 100%;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: clamp(4px, 1vh, 8px);
+  z-index: 10;
+  touch-action: none;
+}
+
+.dpad-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.dpad-btn {
+  width: clamp(46px, 12vw, 56px);
+  height: clamp(46px, 12vw, 56px);
+  border-radius: var(--radius-cell);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: none;
+  transition: background 0.1s, transform 0.1s, border-color 0.1s;
+}
+
+.dpad-btn:active, .dpad-btn.pressed {
+  background: var(--glass-bg-hover);
+  border-color: var(--electric-blue);
+  transform: scale(0.92);
+  box-shadow: 0 0 15px rgba(0, 210, 255, 0.45);
+}
+
+.dpad-btn svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+}
+
+/* --------------------------------------------------------------------------
+   11. MODALS & POPUPS
+   -------------------------------------------------------------------------- */
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 2, 6, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s var(--ease-smooth);
+}
+
+.modal-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 420px;
+  border-radius: var(--radius-card);
+  padding: clamp(18px, 3.5vh, 26px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transform: scale(0.92);
+  transition: transform 0.3s var(--ease-spring);
+  border: 1px solid rgba(255, 0, 56, 0.3);
+}
+
+.modal-backdrop.open .modal-card {
+  transform: scale(1);
+}
+
+.modal-title {
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  font-size: clamp(20px, 4.5vw, 24px);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.modal-title.lg {
+  font-size: clamp(26px, 6vw, 34px);
+}
+
+.modal-desc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.btn-pill {
+  background: linear-gradient(135deg, #ff0038 0%, #e11d48 100%);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 20px rgba(255, 0, 56, 0.45);
+  transition: transform 0.12s var(--ease-fast), filter 0.15s;
+}
+
+.btn-pill:hover {
+  filter: brightness(1.15);
+}
+
+.btn-pill:active {
+  transform: scale(0.97);
+}
+
+.btn-secondary {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  box-shadow: none;
+}
+
+.btn-secondary:hover {
+  background: var(--glass-bg-hover);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.modal-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   12. SPIDER-SENSE PREDICTION ROUND MODAL
+   -------------------------------------------------------------------------- */
+.prediction-card {
+  text-align: center;
+  border-color: rgba(255, 0, 56, 0.4);
+}
+
+.countdown-bar-wrap {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.countdown-bar {
+  height: 100%;
+  width: 100%;
+  background: var(--accent-emerald);
+  border-radius: inherit;
+  transition: width 0.1s linear, background-color 0.2s;
+}
+
+.prediction-grid-3x3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 8px;
+  width: min(70vw, 240px);
+  height: min(70vw, 240px);
+  margin: 0 auto;
+}
+
+.pred-cell {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-cell);
+  color: var(--text-main);
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.pred-cell:hover {
+  background: rgba(255, 0, 56, 0.15);
+  border-color: var(--spidey-crimson);
+  transform: scale(1.05);
+}
+
+.pred-cell:active {
+  transform: scale(0.95);
+}
+
+.pred-cell.revealed-safe {
+  background: rgba(16, 185, 129, 0.8) !important;
+  border-color: #34d399 !important;
+  color: #ffffff;
+  box-shadow: 0 0 20px #10b981;
+}
+
+.pred-cell.revealed-red {
+  background: rgba(255, 0, 56, 0.8) !important;
+  border-color: #ff0038 !important;
+  color: #ffffff;
+  box-shadow: 0 0 20px #ff0038;
+}
+
+.prediction-feedback {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-height: 20px;
+}
+
+.prediction-feedback.success {
+  color: #34d399;
+}
+
+.prediction-feedback.failure {
+  color: #ff4b6e;
+}
+
+/* --------------------------------------------------------------------------
+   13. GAME OVER & "YOU CANNOT CRACK THE DEVELOPER MIND" BANNER
+   -------------------------------------------------------------------------- */
+.developer-mind-banner {
+  font-family: 'Space Grotesk', cursive, sans-serif;
+  font-style: italic;
+  font-weight: 800;
+  font-size: clamp(14px, 3.8vw, 17px);
+  color: #ff2a55;
+  text-shadow: 0 0 16px rgba(255, 42, 85, 0.8), 0 0 32px rgba(255, 0, 56, 0.5);
+  letter-spacing: 0.5px;
+  padding: 10px 14px;
+  background: rgba(255, 42, 85, 0.12);
+  border: 1px dashed rgba(255, 42, 85, 0.6);
+  border-radius: var(--radius-chip);
+  animation: pulseDevMind 2s infinite ease-in-out;
+  margin: 4px 0 6px 0;
+}
+
+@keyframes pulseDevMind {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 15px rgba(255, 42, 85, 0.3);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 25px rgba(255, 42, 85, 0.6);
+  }
+}
+
+.new-best-banner {
+  display: none;
+  color: var(--accent-emerald);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.score-display-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-chip);
+  padding: 12px;
+  margin: 4px 0;
+}
+
+.score-value {
+  font-size: clamp(34px, 8vw, 44px);
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+  text-shadow: 0 0 15px rgba(255, 0, 56, 0.4);
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.stats-table td {
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stats-table td:last-child {
+  text-align: right;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.stats-table td:first-child {
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   14. COLLEGE ID AUTHENTICATION & AVATAR PICKER
+   -------------------------------------------------------------------------- */
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.avatar-option {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid var(--glass-border);
+  border-radius: var(--radius-chip);
+  padding: 8px 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-main);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.avatar-option:hover {
+  background: var(--glass-bg-hover);
+  border-color: rgba(255, 0, 56, 0.4);
+}
+
+.avatar-option.selected {
+  border-color: #ff0038;
+  background: rgba(255, 0, 56, 0.15);
+  box-shadow: 0 0 14px rgba(255, 0, 56, 0.4);
+}
+
+.avatar-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.avatar-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.label-with-counter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.char-counter {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-subtle);
+}
+
+.input-field {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-chip);
+  color: var(--text-main);
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  font-size: 15px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-field:focus {
+  border-color: #ff0038;
+}
+
+.input-feedback {
+  font-size: 11px;
+  color: var(--text-subtle);
+  margin-top: 4px;
+}
+
+.input-feedback.error {
+  color: #ff4b6e;
+}
+
+/* --------------------------------------------------------------------------
+   15. COLLEGE REAL-TIME LEADERBOARD MODAL
+   -------------------------------------------------------------------------- */
+.leaderboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.live-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.live-status-pill.offline {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: #34d399;
+  box-shadow: 0 0 6px #34d399;
+}
+
+.live-status-pill.offline .live-dot {
+  background: #f87171;
+  box-shadow: 0 0 6px #f87171;
+}
+
+.leaderboard-table-wrap {
+  width: 100%;
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-chip);
+}
+
+.global-leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.global-leaderboard-table th {
+  position: sticky;
+  top: 0;
+  background: #0f101c;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 2;
+}
+
+.global-leaderboard-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.col-rank { width: 44px; text-align: center; }
+.col-score { width: 70px; text-align: right; font-weight: 700; }
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.rank-1 { background: #eab308; color: #000; box-shadow: 0 0 10px rgba(234, 179, 8, 0.5); }
+.rank-2 { background: #94a3b8; color: #000; }
+.rank-3 { background: #b45309; color: #fff; }
+.rank-standard { background: rgba(255, 255, 255, 0.1); color: var(--text-muted); }
+
+.player-info-cell {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow: hidden;
+}
+
+.player-name-text {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.current-user-row {
+  background: rgba(255, 0, 56, 0.12) !important;
+}
+
+.current-user-tag {
+  font-size: 9px;
+  font-weight: 800;
+  background: #ff0038;
+  color: #ffffff;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+/* Skeleton Loading Shimmers */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.04) 75%);
+  background-size: 200% 100%;
+  animation: skeletonSweep 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeletonSweep {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-circle { width: 22px; height: 22px; border-radius: var(--radius-pill); margin: 0 auto; }
+.skeleton-bar-long { width: 90px; height: 14px; }
+.skeleton-bar-short { width: 40px; height: 14px; margin-left: auto; }
+
+.empty-leaderboard-box {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   16. UTILITY CLASSES
+   -------------------------------------------------------------------------- */
+.text-center { text-align: center; }
+.justify-center { justify-content: center; }
+.mt-1 { margin-top: 4px; }
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 10px; }
+.mb-1 { margin-bottom: 4px; }
+.mb-2 { margin-bottom: 8px; }
+
+.help-guide p {
+  margin-bottom: 8px;
+}

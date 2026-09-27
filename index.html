@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Laalpari — Jeet Ke Dikhao (Spider-Man Edition)</title>
+  
+  <!-- Web App Favicon / App Icon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+
+  <!-- Google Fonts: Inter for UI, Space Grotesk for digital numbers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:ital,wght@0,600;0,700;0,800;1,700;1,800&display=swap" rel="stylesheet">
+
+  <!-- External Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Outer shell wrapper (Supports simulated screen testing: Mobile, Tablet, Laptop, TV) -->
+  <div id="device-shell" class="mode-auto">
+    
+    <!-- Red screen vignette flash when taking damage -->
+    <div id="hit-vignette"></div>
+
+    <!-- Canvas layer for spark effects and victory confetti -->
+    <canvas id="fx-canvas"></canvas>
+
+    <!-- Main Game Container -->
+    <div id="game-container">
+      
+      <!-- Top Navigation / Game Header -->
+      <header class="top-toolbar">
+        <div class="brand-badge spider-brand">
+          <span class="brand-spider">🕷️</span>
+          <div class="brand-title-wrap">
+            <span class="brand-name">Laalpari</span>
+            <span class="brand-tag">Jeet Ke Dikhao</span>
+          </div>
+        </div>
+        
+        <div class="toolbar-actions">
+          <!-- College Real-Time Leaderboard button -->
+          <button class="tool-btn" id="btn-leaderboard-toggle" title="College Real-Time Leaderboard" aria-label="College Leaderboard">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+              <path d="M4 22h16"></path>
+              <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"></path>
+              <path d="M6 4h12v7a6 6 0 0 1-12 0V4z"></path>
+            </svg>
+          </button>
+
+          <!-- Viewport simulator button for testing mobile/tablet views -->
+          <button class="tool-btn" id="btn-device-view" title="Toggle device preview" aria-label="Toggle Device View">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+              <line x1="12" y1="18" x2="12.01" y2="18"></line>
+            </svg>
+            <span id="device-view-label">Auto</span>
+          </button>
+          
+          <!-- Sound on/off button -->
+          <button class="tool-btn" id="btn-sound-toggle" title="Toggle sound" aria-label="Toggle Sound">
+            <svg id="icon-sound-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <svg id="icon-sound-off" style="display:none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <line x1="23" y1="9" x2="17" y2="15"></line>
+              <line x1="17" y1="9" x2="23" y2="15"></line>
+            </svg>
+          </button>
+
+          <!-- Pause button -->
+          <button class="tool-btn" id="btn-pause" title="Pause game" aria-label="Pause Game">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="6" y="4" width="4" height="16"></rect>
+              <rect x="14" y="4" width="4" height="16"></rect>
+            </svg>
+          </button>
+
+          <!-- Help / Instructions button -->
+          <button class="tool-btn" id="btn-help" title="Rules and instructions" aria-label="How to Play">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Glassmorphic Heads-Up Display (HUD) -->
+      <section id="hud" class="glass-panel" aria-label="Game HUD">
+        <div class="hud-row">
+          <!-- College ID Profile Badge & Quick Edit Button -->
+          <button class="profile-pill" id="btn-profile-switch" aria-label="Switch College ID">
+            <span class="profile-avatar" id="hud-avatar">🕷️</span>
+            <div class="profile-pill-text">
+              <span class="profile-label">COLLEGE ID</span>
+              <span id="hud-profile-name" class="profile-value">STUDENT</span>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </button>
+
+          <!-- Current Level -->
+          <div class="hud-stat-box center">
+            <div class="hud-stat-label">LEVEL</div>
+            <div class="hud-stat-value tabular" id="hud-round">1</div>
+          </div>
+
+          <!-- Score & Best High Score -->
+          <div class="hud-stat-box">
+            <div class="hud-stat-label">SCORE</div>
+            <div class="hud-stat-value tabular" id="hud-score">0</div>
+            <div class="hud-stat-label sub">BEST <span class="tabular" id="hud-best">0</span></div>
+          </div>
+        </div>
+
+        <!-- 3 Spider Lifelines & Streak Tracker -->
+        <div class="lifelines-row">
+          <div class="spider-lifelines-container" id="capsules-track" aria-label="Remaining Spider Lifelines">
+            <div class="spider-capsule" data-idx="0" title="Lifeline 1">
+              <span class="spider-icon">🕷️</span>
+            </div>
+            <div class="spider-capsule" data-idx="1" title="Lifeline 2">
+              <span class="spider-icon">🕷️</span>
+            </div>
+            <div class="spider-capsule" data-idx="2" title="Lifeline 3">
+              <span class="spider-icon">🕷️</span>
+            </div>
+          </div>
+          
+          <div class="streak-badge" id="streak-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            <span id="streak-count">0 STREAK</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Live 2.0-Second Countdown Timer & Progress Bar -->
+      <section id="round-timer-section" class="timer-section">
+        <div class="timer-meta">
+          <div class="timer-status">
+            <span class="radar-dot"></span>
+            <span class="timer-label">SCAN IN</span>
+          </div>
+          <div class="timer-digits tabular" id="round-timer-digits">2.00s</div>
+        </div>
+        <div class="timer-track">
+          <div class="timer-bar" id="round-timer-bar"></div>
+        </div>
+      </section>
+
+      <!-- 3x3 Arena Grid Section -->
+      <main id="arena-wrap">
+        <div id="grid-viewport" class="glass-panel spider-web-bg">
+          
+          <!-- 3x3 Grid Matrix (9 Blocks) -->
+          <div id="grid-3x3">
+            <!-- Grid Cells (x = 0..2, y = 0..2) -->
+            <div class="grid-cell" id="cell-0-0" data-x="0" data-y="0">
+              <span class="cell-status-tag"></span>
+            </div>
+            <div class="grid-cell" id="cell-1-0" data-x="1" data-y="0">
+              <span class="cell-status-tag"></span>
+            </div>
+            <div class="grid-cell" id="cell-2-0" data-x="2" data-y="0">
+              <span class="cell-status-tag"></span>
+            </div>
+            <div class="grid-cell" id="cell-0-1" data-x="0" data-y="1">
+              <span class="cell-status-tag"></span>
+            </div>
+            <div class="grid-cell" id="cell-1-1" data-x="1" data-y="1">
+              <span class="cell-status-tag"></span>
+            </div>
+            <div class="grid-cell" id="cell-2-1" data-x="2" data-y="1">
+              <span class="cell-status-tag"></span>
+            </div>
+            <div class="grid-cell" id="cell-0-2" data-x="0" data-y="2">
+              <span class="cell-status-tag"></span>
+            </div>
+            <div class="grid-cell" id="cell-1-2" data-x="1" data-y="2">
+              <span class="cell-status-tag"></span>
+            </div>
+            <div class="grid-cell" id="cell-2-2" data-x="2" data-y="2">
+              <span class="cell-status-tag"></span>
+            </div>
+
+            <!-- Player Token: Electric Blue Dot (🔵) with glowing pulse -->
+            <div id="player-token">
+              <div class="player-aura" id="player-aura"></div>
+              <div class="player-disc" id="player-disc">
+                <span class="blue-core"></span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Safe / Danger Legend Bar -->
+        <div class="arena-legend">
+          <div class="legend-item danger">
+            <span class="legend-dot red"></span>
+            <span>7 RED ZONES (LETHAL)</span>
+          </div>
+          <div class="legend-item safe">
+            <span class="legend-dot black"></span>
+            <span>2 SAFE BLACK ZONES</span>
+          </div>
+        </div>
+      </main>
+
+      <!-- On-Screen Touch Controls for Mobile and Tablets -->
+      <footer id="mobile-controls" aria-label="Touch Navigation Controls">
+        <div class="dpad-row">
+          <button class="dpad-btn" id="dpad-up" aria-label="Move Up">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="18 15 12 9 6 15"></polyline>
+            </svg>
+          </button>
+        </div>
+        <div class="dpad-row">
+          <button class="dpad-btn" id="dpad-left" aria-label="Move Left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button class="dpad-btn" id="dpad-down" aria-label="Move Down">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <button class="dpad-btn" id="dpad-right" aria-label="Move Right">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </footer>
+
+    </div>
+
+    <!-- MODAL 1: Spider-Sense Bonus Prediction Round (Triggered when health drops to 1) -->
+    <div class="modal-backdrop" id="modal-prediction">
+      <div class="modal-card glass-panel prediction-card">
+        <div class="brand-badge justify-center">
+          <span class="brand-spider">🕷️</span>
+          <span>SPIDER-SENSE RECOVERY</span>
+        </div>
+        <h2 class="modal-title">Predict Safe Black Zone</h2>
+        <p class="modal-desc">
+          Lifelines critical (1 Remaining)! Tap 1 of the 9 mystery blocks below. If your Spider-Sense correctly identifies one of the <strong>2 SAFE BLACK ZONES</strong> in the next round, you recover <strong>+1 Lifeline</strong>!
+        </p>
+
+        <!-- Prediction Countdown Bar -->
+        <div class="countdown-bar-wrap">
+          <div class="countdown-bar" id="prediction-timer-bar"></div>
+        </div>
+
+        <!-- 3x3 Prediction Mystery Blocks Grid -->
+        <div class="prediction-grid-3x3" id="prediction-grid">
+          <button class="pred-cell" data-x="0" data-y="0"><span class="pred-inner">?</span></button>
+          <button class="pred-cell" data-x="1" data-y="0"><span class="pred-inner">?</span></button>
+          <button class="pred-cell" data-x="2" data-y="0"><span class="pred-inner">?</span></button>
+          <button class="pred-cell" data-x="0" data-y="1"><span class="pred-inner">?</span></button>
+          <button class="pred-cell" data-x="1" data-y="1"><span class="pred-inner">?</span></button>
+          <button class="pred-cell" data-x="2" data-y="1"><span class="pred-inner">?</span></button>
+          <button class="pred-cell" data-x="0" data-y="2"><span class="pred-inner">?</span></button>
+          <button class="pred-cell" data-x="1" data-y="2"><span class="pred-inner">?</span></button>
+          <button class="pred-cell" data-x="2" data-y="2"><span class="pred-inner">?</span></button>
+        </div>
+
+        <div class="prediction-feedback" id="prediction-feedback">Select a block to scan your Spider-Sense!</div>
+      </div>
+    </div>
+
+    <!-- MODAL 2: Game Over Screen -->
+    <div class="modal-backdrop" id="modal-gameover">
+      <div class="modal-card glass-panel text-center gameover-card">
+        <div class="brand-badge justify-center mb-1">
+          <span class="brand-spider">🕷️</span>
+          <span>LAALPARI ARENA</span>
+        </div>
+
+        <!-- Developer Mind Quote Required by Prompt -->
+        <div class="developer-mind-banner" id="gameover-dev-quote">
+          "you cannot crack the developer mind"
+        </div>
+
+        <h2 class="modal-title lg">Game Over</h2>
+        
+        <div id="gameover-newbest" class="new-best-banner">
+          ★ NEW COLLEGE RECORD ★
+        </div>
+
+        <div class="score-display-box">
+          <div class="hud-stat-label">FINAL SCORE</div>
+          <div class="tabular score-value" id="gameover-score">0</div>
+        </div>
+
+        <table class="stats-table">
+          <tr>
+            <td>College ID</td>
+            <td id="gameover-college-id" class="tabular font-bold">STUDENT</td>
+          </tr>
+          <tr>
+            <td>Level Reached</td>
+            <td id="gameover-rounds">1</td>
+          </tr>
+          <tr>
+            <td>Personal Best</td>
+            <td id="gameover-best">0</td>
+          </tr>
+          <tr>
+            <td>Longest Streak</td>
+            <td id="gameover-streak">0</td>
+          </tr>
+        </table>
+
+        <div class="modal-action-buttons">
+          <button class="btn-pill" id="btn-restart">Play Again</button>
+          <button class="btn-pill btn-secondary" id="btn-gameover-leaderboard">College Leaderboard</button>
+          <button class="btn-pill btn-secondary" id="btn-switch-user">Switch College ID</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 3: College ID Login & Avatar Setup -->
+    <div class="modal-backdrop" id="modal-profile">
+      <div class="modal-card glass-panel profile-card">
+        <div class="brand-badge justify-center mb-1">
+          <span class="brand-spider">🕷️</span>
+          <span>LAALPARI — JEET KE DIKHAO</span>
+        </div>
+        <h2 class="modal-title">College ID Authentication</h2>
+        <p class="modal-desc">Enter your unique College ID to bind your high scores and climb the real-time leaderboard.</p>
+        
+        <!-- Avatar Selector with 6 Spider-Man themed icons -->
+        <div class="avatar-section mt-2">
+          <label class="hud-stat-label">CHOOSE AVATAR</label>
+          <div class="avatar-grid mt-1" id="avatar-picker-grid">
+            <button type="button" class="avatar-option selected" data-avatar="🕷️" title="Classic Spider">
+              <span class="avatar-icon">🕷️</span>
+              <span class="avatar-label">Classic</span>
+            </button>
+            <button type="button" class="avatar-option" data-avatar="🕸️" title="Web Slinger">
+              <span class="avatar-icon">🕸️</span>
+              <span class="avatar-label">Web</span>
+            </button>
+            <button type="button" class="avatar-option" data-avatar="🖤" title="Symbiote">
+              <span class="avatar-icon">🖤</span>
+              <span class="avatar-label">Symbiote</span>
+            </button>
+            <button type="button" class="avatar-option" data-avatar="⚡" title="Electro Volt">
+              <span class="avatar-icon">⚡</span>
+              <span class="avatar-label">Electro</span>
+            </button>
+            <button type="button" class="avatar-option" data-avatar="🔴" title="Crimson Hero">
+              <span class="avatar-icon">🔴</span>
+              <span class="avatar-label">Crimson</span>
+            </button>
+            <button type="button" class="avatar-option" data-avatar="🔵" title="Electric Blue">
+              <span class="avatar-icon">🔵</span>
+              <span class="avatar-label">Blue Dot</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- College ID Input (2-15 chars, alphanumeric / hyphen / underscore) -->
+        <div class="mt-2">
+          <div class="label-with-counter">
+            <label class="hud-stat-label" for="profile-username-input">UNIQUE COLLEGE ID</label>
+            <span class="char-counter" id="profile-char-counter">0/15</span>
+          </div>
+          <div class="create-profile-row mt-1">
+            <input type="text" id="profile-username-input" class="input-field" placeholder="e.g. 21BCSE042 or ADITYA" maxlength="15" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="input-feedback" id="profile-input-feedback">Letters, numbers, dash & underscore only (3–15 chars)</div>
+        </div>
+
+        <!-- Quick Switch Profile Dropdown (For multi-ID support on this device) -->
+        <div class="mt-2" id="saved-profiles-section">
+          <label class="hud-stat-label" for="profile-select-dropdown">SAVED IDS ON THIS DEVICE</label>
+          <select id="profile-select-dropdown" class="input-field mt-1"></select>
+        </div>
+
+        <div class="modal-action-buttons mt-3">
+          <button class="btn-pill" id="btn-profile-start">Save & Play</button>
+          <button class="btn-pill btn-secondary" id="btn-profile-leaderboard">College Leaderboard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 4: How to Play / Guide -->
+    <div class="modal-backdrop" id="modal-help">
+      <div class="modal-card glass-panel">
+        <h2 class="modal-title">How to Play: Laalpari</h2>
+        <div class="modal-desc help-guide">
+          <p><strong>1. Goal:</strong> Control the electric Blue Dot (🔵) and survive round after round in the 3×3 Spider Arena!</p>
+          <p><strong>2. 2-Second Timer:</strong> Every round lasts exactly <strong>2.00 seconds</strong>. Watch the progress bar drain!</p>
+          <p><strong>3. 7 Red vs 2 Safe Black:</strong> In every round, 7 blocks turn into dangerous <strong>Red Zones</strong> and only 2 blocks are <strong>Safe Black Zones</strong>.</p>
+          <p><strong>4. Scanning:</strong> When the 2s timer reaches 0.00s, the arena scans your location. If you are in a Safe Black Zone, you earn +1 Level and +1 Point! If caught in a Red Zone, you lose 1 Lifeline.</p>
+          <p><strong>5. 3 Spider Lifelines:</strong> You start with 3 lifelines (🕷️). When dropping from 2 to 1 lifeline, the <strong>Spider-Sense Prediction Round</strong> activates! Guess 1 of the 9 blocks that will be safe next round to recover +1 Lifeline!</p>
+          <p><strong>6. College Leaderboard:</strong> Your high score binds to your unique College ID and syncs globally in real time via Supabase PostgreSQL.</p>
+        </div>
+        <button class="btn-pill" id="btn-help-close">Got It</button>
+      </div>
+    </div>
+
+    <!-- MODAL 5: Pause Menu -->
+    <div class="modal-backdrop" id="modal-pause">
+      <div class="modal-card glass-panel text-center">
+        <h2 class="modal-title">Game Paused</h2>
+        <p class="modal-desc">The Spider-Sense countdown is frozen. Ready to resume?</p>
+        <div class="modal-action-buttons mt-3">
+          <button class="btn-pill" id="btn-resume">Resume Game</button>
+          <button class="btn-pill btn-secondary" id="btn-pause-restart">Restart Run</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 6: College Real-Time Leaderboard (Supabase WebSocket) -->
+    <div class="modal-backdrop" id="modal-leaderboard">
+      <div class="modal-card glass-panel leaderboard-card">
+        <div class="leaderboard-header">
+          <div>
+            <div class="brand-badge mb-1">
+              <span class="brand-spider">🕷️</span>
+              <span>SUPABASE REALTIME</span>
+            </div>
+            <h2 class="modal-title">College Leaderboard</h2>
+          </div>
+          <div class="live-status-pill" id="leaderboard-status-badge">
+            <span class="live-dot"></span>
+            <span id="leaderboard-status-text">LIVE SYNC</span>
+          </div>
+        </div>
+
+        <p class="modal-desc">Instant real-time scores across all College IDs via Supabase WebSockets.</p>
+
+        <!-- Leaderboard Table Container -->
+        <div class="leaderboard-table-wrap">
+          <table class="global-leaderboard-table">
+            <thead>
+              <tr>
+                <th class="col-rank">Rank</th>
+                <th class="col-player">College ID</th>
+                <th class="col-score">High Score</th>
+              </tr>
+            </thead>
+            <tbody id="global-leaderboard-body">
+              <!-- Dynamically populated from Supabase realtime -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="modal-action-buttons mt-3">
+          <button class="btn-pill" id="btn-leaderboard-close">Back to Arena</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Supabase JS v2 Client (Official CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase Cloud Database Configuration -->
+  <script src="supabase_config.js"></script>
+  <!-- Main Game Engine Script -->
+  <script src="script.js"></script>
+</body>
+</html>
